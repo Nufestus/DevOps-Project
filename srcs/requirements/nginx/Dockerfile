@@ -3,12 +3,13 @@ FROM debian:bookworm
 RUN apt-get update -y \
     && apt-get install nginx openssl -y
 
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/CN=aammisse.42.fr"
+RUN mkdir -p /etc/nginx/ssl
 
-COPY ./conf/nginx.conf /etc/nginx/conf.d
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/ssl/inception.key \
+    -out /etc/nginx/ssl/inception.crt \
+    -subj "/CN=aammisse.42.fr"
 
-COPY ./tools/nginx.sh .
+COPY ./conf/nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN chmod +x nginx.sh
-
-CMD ["./nginx.sh"]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

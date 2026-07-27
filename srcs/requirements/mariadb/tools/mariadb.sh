@@ -1,13 +1,23 @@
 #!/bin/bash
+set -e
 
-service mariadb start
-sleep 5
+mkdir -p /run/mysqld
+chown -R mysql:mysql /run/mysqld
 
-mariadb -e "CREATE DATABASE IF NOT EXISTS $MDB_DATABASE;"
-mariadb -e "CREATE USER IF NOT EXISTS \`$MDB_USER\`@'%' IDENTIFIED BY '$MDB_PASSWORD';"
-mariadb -e "GRANT ALL PRIVILEGES ON info.* TO \`$MDB_USER\`@'%';"
-mariadb -e "FLUSH PRIVILEGES;"
+if [ ! -d "/var/lib/mysql/mysql" ]; then
+    echo "Initializing MariaDB system tables..."
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql > /dev/null
+fi
 
-mysqladmin shutdown
+echo "Setting up database and users..."
+mysqld --user=mysql --bootstrap << EOF
+FLUSH PRIVILEGES;
+CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+FLUSH PRIVILEGES;
+EOF
 
-mysqld_safe --bind-address=0.0.0.0
+echo "MariaDB is ready!"
+exec mysqld --user=mysql --console

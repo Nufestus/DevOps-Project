@@ -42,6 +42,7 @@ services:
 networks:
   inception:
     name: aammisse
+    driver: bridge
 
 volumes:
   mariadb:
