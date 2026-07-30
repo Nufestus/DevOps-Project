@@ -11,6 +11,10 @@ down:
 stop:
 	docker compose -f ./srcs/docker-compose.yml stop
 
+clean: down prune
+
+fclean: clean rmv
+
 rmv:
 	sudo rm -rf ~/data/*
 

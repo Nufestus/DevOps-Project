@@ -3,7 +3,7 @@
 cd /var/www/html
 
 echo "Waiting for MariaDB to be ready..."
-until mysqladmin -h mariadb -u root -p"$MYSQL_ROOT_PASSWORD" ping --silent; do
+until mysqladmin -h mariadb ping --silent; do
     sleep 1
 done
 echo "MariaDB is up and running!"
